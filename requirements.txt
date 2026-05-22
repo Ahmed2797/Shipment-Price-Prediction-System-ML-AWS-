@@ -1,0 +1,30 @@
+numpy==2.3.4
+pandas==2.3.3
+seaborn==0.13.2
+matplotlib==3.10.7
+scikit-learn==1.7.2
+
+xgboost
+optuna
+fastapi
+uvicorn
+jinja2
+python-multipart
+
+pymongo[srv]
+pymongo==4.15.3
+python-dotenv==1.2.1
+certifi==2025.1.31
+
+evidently==0.7.15
+setuptools==80.9.0
+
+neuro-mf==0.0.5
+
+## dev
+boto3
+mypy-boto3-s3
+dvc==3.66.1
+reqsnap
+
+-e .
