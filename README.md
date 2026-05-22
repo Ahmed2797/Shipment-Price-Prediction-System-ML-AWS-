@@ -11,7 +11,7 @@ Before you run this project make sure you have MongoDB Atlas account and you hav
 Step 1. Cloning the repository.
 
 ```bash
-git clone https://github.com/entbappy/Shipment-Price-Prediction-ML-Project.git
+git clone https://github.com/Ahmed2797/Shipment-Price-Prediction-System-ML-AWS-.git
 ```
 
 Step 2. Create a conda environment.
