@@ -1,0 +1,116 @@
+columns:
+  Customer Id: object
+  Artist Name: object
+  Artist Reputation: float64
+  Height: float64
+  Width: float64
+  Weight: float64
+  Material: object
+  Price Of Sculpture: float64
+  Base Shipping Price: float64
+  International: object
+  Express Shipment: object
+  Installation Included: object
+  Transport: object
+  Fragile: object
+  Customer Information: object
+  Remote Location: object
+  Scheduled Date: object
+  Delivery Date: object
+  Customer Location: object
+  Cost: float64
+
+target_column: Cost
+
+numerical_columns:
+  - Artist Reputation
+  - Height
+  - Width
+  - Weight
+  - Price Of Sculpture
+  - Base Shipping Price
+
+categorical_columns:
+  - Customer Id
+  - Artist Name
+  - Material
+  - International
+  - Express Shipment
+  - Installation Included
+  - Transport
+  - Fragile
+  - Customer Information
+  - Remote Location
+  - Scheduled Date
+  - Delivery Date
+  - Customer Location
+
+binary_categorical_columns:
+  International:
+    mapping: {"Yes": 1, "No": 0}
+
+  Express Shipment:
+    mapping: {"Yes": 1, "No": 0}
+
+  Installation Included:
+    mapping: {"Yes": 1, "No": 0}
+
+  Fragile:
+    mapping: {"Yes": 1, "No": 0}
+
+  Remote Location:
+    mapping: {"Yes": 1, "No": 0}
+
+multi_categorical_columns:
+  - Artist Name
+  - Material
+  - Transport
+  - Customer Information
+  - Customer Location
+
+date_columns:
+  - Scheduled Date
+  - Delivery Date
+
+engineered_features:
+  - Delivery_Days
+  - Size
+  - Price_per_Weight
+  - Price_per_Size
+
+drop_columns:
+  - Customer Id
+  - Artist Name
+  - Customer Location
+  - Scheduled Date
+  - Delivery Date
+
+log_transform_col:
+  - Weight
+  - Price Of Sculpture
+
+power_transform_col:
+  - Artist Reputation
+  - Height
+  - Width
+  - Base Shipping Price
+
+ordinal_encode_col: []
+
+onehot_encode_col:
+  - Material
+  - Transport
+  - Remote Location
+  - International
+  - Express Shipment
+  - Installation Included
+  - Fragile
+  - Customer Information
+
+target_transform:
+  - Cost
+
+outlier_columns:
+  - Weight
+  - Price Of Sculpture
+  - Cost
