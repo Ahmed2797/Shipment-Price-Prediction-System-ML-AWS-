@@ -44,3 +44,13 @@ class Data_Ingestion_Config:
     split_ratio = DATA_INGESTION_SPLIT_RATIO 
     data_ingestion_collection_name = Collection_name 
 
+
+# ================================================================
+# DATA VALIDATION CONFIG
+# ================================================================
+@dataclass 
+class Data_Validation_Config:
+    data_validation_dir = os.path.join(project_config.artifact, DATA_VALIDATION_DIR)
+    report_dir = os.path.join(data_validation_dir, DATA_VALIDATION_REPORT_DIR)
+    report_status = os.path.join(data_validation_dir, DATA_VALIDATION_REPORT_STATUS)
+
