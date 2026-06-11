@@ -1,14 +1,17 @@
 from src.components.data_ingestion import Data_Ingestion
 from src.components.data_validation import Data_Validation
+from src.components.data_transformation import Data_Transformation
 
 from src.entity.config_entity import (
     Data_Ingestion_Config,
-    Data_Validation_Config
+    Data_Validation_Config,
+    Data_Transformation_Config
 )
 
 from src.entity.artifact_entity import (
     Data_Ingestion_Artifact,
-    Data_Validation_Artifact
+    Data_Validation_Artifact,
+    Data_Transformation_Artifact
 )
 
 from src.exception import CustomException
@@ -20,6 +23,7 @@ class Training_Pipeline:
     def __init__(self):
         self.data_ingestion_config = Data_Ingestion_Config()
         self.data_validation_config = Data_Validation_Config()
+        self.data_transformation_config = Data_Transformation_Config()
 
 
     def get_started_data_ingestion(self) -> Data_Ingestion_Artifact:
@@ -52,6 +56,28 @@ class Training_Pipeline:
         except Exception as e:
             raise CustomException(e, sys)
 
+    def get_started_data_transformation(
+        self,
+        data_ingestion_artifact: Data_Ingestion_Artifact,
+        data_validation_artifact: Data_Validation_Artifact
+    ) -> Data_Transformation_Artifact:
+        try:
+            logging.info(">>>>>>>>>>>  Data Transformation Started  >>>>>>>>>>>>")
+
+            data_transformation = Data_Transformation(
+                self.data_transformation_config,
+                data_ingestion_artifact,
+                data_validation_artifact
+            )
+            data_transformation_artifact = data_transformation.initiate_data_transformation()
+
+            logging.info(">>>>>>>>>>>  Data Transformation Completed  >>>>>>>>>>>>")
+            logging.info(data_transformation_artifact)
+
+            return data_transformation_artifact
+                
+        except Exception as e:
+            raise CustomException(e, sys)
         
         
     def run_pipeline(self):
@@ -61,6 +87,9 @@ class Training_Pipeline:
 
             data_ingestion_artifact = self.get_started_data_ingestion()
             data_validation_artifact = self.get_started_data_validation(data_ingestion_artifact)
+            data_transformation_artifact = self.get_started_data_transformation(
+                data_ingestion_artifact, data_validation_artifact
+            )
 
             
             return None
