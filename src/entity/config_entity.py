@@ -54,3 +54,28 @@ class Data_Validation_Config:
     report_dir = os.path.join(data_validation_dir, DATA_VALIDATION_REPORT_DIR)
     report_status = os.path.join(data_validation_dir, DATA_VALIDATION_REPORT_STATUS)
 
+
+# ================================================================
+# DATA TRANSFORMATION CONFIG
+# ================================================================
+@dataclass
+class Data_Transformation_Config:
+    data_transformation_dir: str = os.path.join(project_config.artifact, DATA_TRANSFORMATION_DIR)
+    
+    transform_train_path: str = os.path.join(
+        data_transformation_dir, 
+        TRANSFORM_FILE, 
+        Train_Data.replace('csv', 'npy')
+    )
+    transform_test_path: str = os.path.join(
+        data_transformation_dir, 
+        TRANSFORM_FILE, 
+        Test_Data.replace('csv', 'npy')
+    )
+    transform_object_path: str = os.path.join(
+        data_transformation_dir, 
+        TRANSFORM_OBJECT, 
+        PREPROCESSING_OBJECT
+    )
+
+    final_model_path: str = os.path.join(project_config.model_dir, PREPROCESSING_OBJECT)
