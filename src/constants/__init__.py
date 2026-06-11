@@ -1,6 +1,7 @@
 import os
 from datetime import date
 from os import environ
+import numpy as np
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -40,4 +41,16 @@ Collection_name:str = 'Ship-connection'
 # Data_validation 
 DATA_VALIDATION_DIR:str = 'data_validation'
 DATA_VALIDATION_REPORT_DIR:str = 'drift_report'
-DATA_VALIDATION_REPORT_STATUS:str = 'report.yaml' 
+DATA_VALIDATION_REPORT_STATUS:str = 'report.yaml'
+
+# Data_Transformation
+DATA_TRANSFORMATION_DIR = "data_transform"
+TRANSFORM_FILE = "transform"
+TRANSFORM_OBJECT = "transform_obj"
+PREPROCESSING_OBJECT = "preprocessing.pkl"
+
+DATA_TRANSFORMATION_IMPUTER_PARAMS = {
+    "n_neighbors": 3,
+    "weights": "uniform",
+    "missing_values": np.nan
+}
