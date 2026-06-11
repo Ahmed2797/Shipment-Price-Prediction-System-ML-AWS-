@@ -62,11 +62,14 @@ binary_categorical_columns:
     mapping: {"Yes": 1, "No": 0}
 
 multi_categorical_columns:
-  - Artist Name
   - Material
+  - International
+  - Express Shipment
+  - Installation Included
   - Transport
+  - Fragile
   - Customer Information
-  - Customer Location
+  - Remote Location
 
 date_columns:
   - Scheduled Date
