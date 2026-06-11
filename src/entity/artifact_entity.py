@@ -14,3 +14,10 @@ class Data_Validation_Artifact:
     validation_status:bool
     message_error:List[str]
     drift_report_file_path:str
+
+
+@dataclass
+class Data_Transformation_Artifact:
+    transform_train_path: str
+    transform_test_path: str
+    preprocessing_pkl: str
