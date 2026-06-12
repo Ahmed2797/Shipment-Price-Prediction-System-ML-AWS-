@@ -1,17 +1,20 @@
 from src.components.data_ingestion import Data_Ingestion
 from src.components.data_validation import Data_Validation
 from src.components.data_transformation import Data_Transformation
+from src.components.model_trainer import Model_Trainer
 
 from src.entity.config_entity import (
     Data_Ingestion_Config,
     Data_Validation_Config,
-    Data_Transformation_Config
+    Data_Transformation_Config,
+    Model_Trainer_Config
 )
 
 from src.entity.artifact_entity import (
     Data_Ingestion_Artifact,
     Data_Validation_Artifact,
-    Data_Transformation_Artifact
+    Data_Transformation_Artifact,
+    Model_Trainer_Artifact
 )
 
 from src.exception import CustomException
@@ -24,6 +27,8 @@ class Training_Pipeline:
         self.data_ingestion_config = Data_Ingestion_Config()
         self.data_validation_config = Data_Validation_Config()
         self.data_transformation_config = Data_Transformation_Config()
+        self.model_trainer_config = Model_Trainer_Config()
+
 
 
     def get_started_data_ingestion(self) -> Data_Ingestion_Artifact:
@@ -79,6 +84,25 @@ class Training_Pipeline:
         except Exception as e:
             raise CustomException(e, sys)
         
+    
+    def get_model_trainer(self,
+        data_transformation_artifact:Data_Transformation_Artifact
+    ) -> Model_Trainer_Artifact:
+        try:
+            logging.info(">>>>>>>>>>>  Model Training Started  >>>>>>>>>>>>")
+
+            model_train = Model_Trainer(
+                data_transformation_artifact,self.model_trainer_config,
+            )
+            model_trainer_artifact = model_train.init_model()
+
+            logging.info(">>>>>>>>>>>  Model Training Completed  >>>>>>>>>>>>")
+            logging.info(model_trainer_artifact)
+
+            return model_trainer_artifact
+        except Exception as e:
+            raise CustomException(e, sys)
+        
         
     def run_pipeline(self):
         try:
@@ -90,6 +114,8 @@ class Training_Pipeline:
             data_transformation_artifact = self.get_started_data_transformation(
                 data_ingestion_artifact, data_validation_artifact
             )
+            model_trainer_artifact = self.get_model_trainer(data_transformation_artifact)
+
 
             
             return None
