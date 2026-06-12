@@ -79,3 +79,28 @@ class Data_Transformation_Config:
     )
 
     final_model_path: str = os.path.join(project_config.model_dir, PREPROCESSING_OBJECT)
+
+
+
+# ================================================================
+# MODEL TRAINER CONFIG
+# Fix: best_model_object path corrected
+# ================================================================
+@dataclass 
+class Model_Trainer_Config:
+    model_train_dir: str = os.path.join(project_config.artifact, MODEL_TRAINER_DIR)
+    # model_train_file_path: str = os.path.join(model_train_dir, MODEL_TRAINER_FILE_PATH)
+
+    best_model_object: str = os.path.join(model_train_dir, BEST_MODEL_OBJECT)
+    # model_train_file_path: str = best_model_object
+
+    excepted_score: float = EXCEPTED_SCORE 
+    param_yaml = PARAM_YAML_FILE
+
+    mlflow_tracking_uri: str = 'https://dagshub.com/Ahmed2797/Shipment-Price-Prediction-System-ML-AWS-.mlflow'
+    mlflow_experiment_name: str = 'Shipment-Cost-V1'
+
+    # final_model_path: str = os.path.join(project_config.model_dir, BEST_MODEL_OBJECT)
+    final_model_path: str = os.path.join(project_config.model_dir,"prediction_model",PREDICTION_BEST_MODEL_OBJECT)
+    model_train_file_path: str = final_model_path
+    
