@@ -29,6 +29,12 @@ numerical_columns:
   - Weight
   - Price Of Sculpture
   - Base Shipping Price
+  - Delivery_Days
+  - Scheduled_Month
+  - Size
+  - Price_per_Weight
+  - Price_per_Size
+  - Weight_to_Size
 
 categorical_columns:
   - Customer Id
@@ -97,6 +103,10 @@ power_transform_col:
   - Height
   - Width
   - Base Shipping Price
+  - Size
+  - Price_per_Weight
+  - Price_per_Size
+  - Weight_to_Size
 
 ordinal_encode_col: []
 
