@@ -1,0 +1,10 @@
+artifact_location: file:///home/ahmed/CV_ADD_PROJECT/MachineLearning/Shipment-Price-Prediction-System-ML-AWS-/mlruns/0/models/m-93ecd6e2a3a8484dbe62d897f9ec4382/artifacts
+creation_timestamp: 1781255296651
+experiment_id: '0'
+last_updated_timestamp: 1781255301917
+model_id: m-93ecd6e2a3a8484dbe62d897f9ec4382
+model_type: null
+name: model
+source_run_id: 97ebe1cf523f4ff2a417c358f94bcd07
+status: 2
+status_message: null

@@ -1,0 +1,14 @@
+artifact_uri: file:///home/ahmed/CV_ADD_PROJECT/MachineLearning/Shipment-Price-Prediction-System-ML-AWS-/mlruns/0/81229e4b4c314a948c29540e01f9b585/artifacts
+end_time: 1781254147506
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 81229e4b4c314a948c29540e01f9b585
+run_name: model_trainer_RandomForestRegressor_Optuna
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1781254141615
+status: 3
+tags: []
+user_id: ahmed
