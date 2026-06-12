@@ -1,5 +1,5 @@
 from dataclasses import dataclass 
-from typing import List
+from typing import List, Union
 from src.constants import *
 
 
@@ -21,3 +21,25 @@ class Data_Transformation_Artifact:
     transform_train_path: str
     transform_test_path: str
     preprocessing_pkl: str
+
+
+@dataclass
+class ClassificationMetricArtifact:
+    f1_score:float
+    precision_score:float
+    recall_score:float
+    accuracy_score:float
+
+
+@dataclass
+class RegressionMetricArtifact:
+    r2_score: float
+    mse: float
+    rmse: float
+    mae: float
+
+
+@dataclass
+class Model_Trainer_Artifact:
+    trained_model_file_path:str 
+    metric_artifact: Union[ClassificationMetricArtifact, RegressionMetricArtifact]
