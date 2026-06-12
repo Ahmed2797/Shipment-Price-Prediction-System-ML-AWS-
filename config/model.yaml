@@ -1,0 +1,52 @@
+optuna:
+  n_trials: 5
+  cv: 2
+  scoring: r2
+  direction: maximize
+
+model_selection:
+
+  module_0:
+    class: RandomForestRegressor
+    module: sklearn.ensemble
+    params:
+      random_state: 42
+    search_param_grid:
+      n_estimators:
+        low: 100
+        high: 200
+        step: 20
+      max_depth:
+        low: 5
+        high: 8
+      min_samples_split:
+        low: 2
+        high: 6
+      min_samples_leaf:
+        low: 2
+        high: 7
+
+  module_1:
+    class: XGBRegressor
+    module: xgboost
+    params:
+      objective: reg:squarederror
+      eval_metric: rmse
+      random_state: 42
+    search_param_grid:
+      n_estimators:
+        low: 100
+        high: 200
+        step: 25
+      max_depth:
+        low: 3
+        high: 8
+      learning_rate:
+        low: 0.01
+        high: 0.1
+      subsample:
+        low: 0.5
+        high: 1.0
+      colsample_bytree:
+        low: 0.6
+        high: 0.8
