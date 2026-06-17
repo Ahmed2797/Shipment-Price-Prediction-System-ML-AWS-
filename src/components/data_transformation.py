@@ -210,27 +210,27 @@ class Data_Transformation:
             df["Delivery_Days"] = (df["Scheduled Date"] - df["Delivery Date"]).dt.days
             df["Delivery_Days"] = df["Delivery_Days"].fillna(df["Delivery_Days"].median())
         
-        # ---- Size features ----
-        if "Height" in df.columns and "Width" in df.columns:
-            # Create size feature (surface area proxy)
-            df["Size"] = df["Height"] * df["Width"]
-            df["Size"] = df["Size"].clip(lower=0)  # Ensure non-negative
-            df["Size"] = df["Size"].fillna(df["Size"].median())
+        # # ---- Size features ----
+        # if "Height" in df.columns and "Width" in df.columns:
+        #     # Create size feature (surface area proxy)
+        #     df["Size"] = df["Height"] * df["Width"]
+        #     df["Size"] = df["Size"].clip(lower=0)  # Ensure non-negative
+        #     df["Size"] = df["Size"].fillna(df["Size"].median())
         
-        # ---- Price ratio features ----
-        if "Price Of Sculpture" in df.columns and "Weight" in df.columns:
-            # Avoid division by zero by adding 1
-            df["Price_per_Weight"] = df["Price Of Sculpture"] / (df["Weight"].abs() + 1)
-            df["Price_per_Weight"] = df["Price_per_Weight"].fillna(df["Price_per_Weight"].median())
+        # # ---- Price ratio features ----
+        # if "Price Of Sculpture" in df.columns and "Weight" in df.columns:
+        #     # Avoid division by zero by adding 1
+        #     df["Price_per_Weight"] = df["Price Of Sculpture"] / (df["Weight"].abs() + 1)
+        #     df["Price_per_Weight"] = df["Price_per_Weight"].fillna(df["Price_per_Weight"].median())
         
-        if "Price Of Sculpture" in df.columns and "Size" in df.columns:
-            df["Price_per_Size"] = df["Price Of Sculpture"] / (df["Size"] + 1)
-            df["Price_per_Size"] = df["Price_per_Size"].fillna(df["Price_per_Size"].median())
+        # if "Price Of Sculpture" in df.columns and "Size" in df.columns:
+        #     df["Price_per_Size"] = df["Price Of Sculpture"] / (df["Size"] + 1)
+        #     df["Price_per_Size"] = df["Price_per_Size"].fillna(df["Price_per_Size"].median())
         
-        # ---- Weight density features ----
-        if "Weight" in df.columns and "Size" in df.columns:
-            df["Weight_to_Size"] = df["Weight"].abs() / (df["Size"] + 1)
-            df["Weight_to_Size"] = df["Weight_to_Size"].fillna(df["Weight_to_Size"].median())
+        # # ---- Weight density features ----
+        # if "Weight" in df.columns and "Size" in df.columns:
+        #     df["Weight_to_Size"] = df["Weight"].abs() / (df["Size"] + 1)
+        #     df["Weight_to_Size"] = df["Weight_to_Size"].fillna(df["Weight_to_Size"].median())
         
         logging.info(f"Feature engineering completed. New features: "
                     f"Scheduled_Month, Delivery_Days, Size, Price_per_Weight, "
@@ -450,24 +450,51 @@ class Data_Transformation:
 
             # ---- STEP 9: Create and fit preprocessor (on train only) ----
             logging.info("Step 9: Creating and fitting preprocessor (on train only)...")
-            preprocessor = self.get_preprocessor()
-            
+
+            # Use only columns that actually exist in X_train to avoid sklearn errors
+            numerical_cols = [
+                c for c in self._column_schema.get("numerical_columns", []) if c in X_train.columns
+            ]
+            multi_cat_cols = [
+                c for c in self._column_schema.get("multi_categorical_columns", []) if c in X_train.columns
+            ]
+
+            transformers = []
+            if numerical_cols:
+                numeric_pipeline = Pipeline([
+                    ("imputer", KNNImputer(**DATA_TRANSFORMATION_IMPUTER_PARAMS)),
+                    ("scaler", StandardScaler())
+                ])
+                transformers.append(("num", numeric_pipeline, numerical_cols))
+
+            if multi_cat_cols:
+                categorical_pipeline = Pipeline([
+                    ("imputer", SimpleImputer(strategy="most_frequent")),
+                    ("encoder", OneHotEncoder(handle_unknown="ignore", drop="first", sparse_output=False))
+                ])
+                transformers.append(("cat", categorical_pipeline, multi_cat_cols))
+
+            if not transformers:
+                raise CustomException("No valid numeric or categorical columns found for preprocessing", sys)
+
+            preprocessor = ColumnTransformer(transformers, remainder="drop")
+
             # ✅ FIT ONLY on train data (prevents leakage)
             X_train_transformed = preprocessor.fit_transform(X_train)
-            
+
             # ✅ TRANSFORM test using fitted preprocessor
             X_test_transformed = preprocessor.transform(X_test)
 
             # Convert to DataFrame for better tracking
             feature_names = preprocessor.get_feature_names_out()
             X_train_transformed = pd.DataFrame(
-                X_train_transformed, 
-                columns=feature_names, 
+                X_train_transformed,
+                columns=feature_names,
                 index=X_train.index
             )
             X_test_transformed = pd.DataFrame(
-                X_test_transformed, 
-                columns=feature_names, 
+                X_test_transformed,
+                columns=feature_names,
                 index=X_test.index
             )
             
