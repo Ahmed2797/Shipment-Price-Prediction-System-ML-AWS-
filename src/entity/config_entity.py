@@ -104,3 +104,16 @@ class Model_Trainer_Config:
     final_model_path: str = os.path.join(project_config.model_dir,"prediction_model",PREDICTION_BEST_MODEL_OBJECT)
     model_train_file_path: str = final_model_path
     
+
+@dataclass
+class Model_Evaluation_Config:
+    """
+    Configuration class for evaluating machine learning models.
+
+    Attributes:
+        performance has changed significantly and needs retraining or redeployment.
+        bucket_name (str): Name of the S3 bucket where the model or evaluation artifacts are stored.
+        s3_model_key_path (str): S3 key path (file name) of the model to be evaluated.
+    """
+    bucket_name: str = MODEL_BUCKET_NAME
+    s3_model_key_path: str =  PREDICTION_BEST_MODEL_OBJECT ## BEST_MODEL_OBJECT
