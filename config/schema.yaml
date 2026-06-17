@@ -103,10 +103,10 @@ power_transform_col:
   - Height
   - Width
   - Base Shipping Price
-  - Size
-  - Price_per_Weight
-  - Price_per_Size
-  - Weight_to_Size
+  # - Size
+  # - Price_per_Weight
+  # - Price_per_Size
+  # - Weight_to_Size
 
 ordinal_encode_col: []
 
