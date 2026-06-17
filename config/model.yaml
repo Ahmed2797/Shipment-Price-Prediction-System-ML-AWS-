@@ -1,6 +1,6 @@
 optuna:
-  n_trials: 5
-  cv: 2
+  n_trials: 10
+  cv: 3
   scoring: r2
   direction: maximize
 
@@ -15,13 +15,13 @@ model_selection:
       n_estimators:
         low: 100
         high: 200
-        step: 20
+        step: 50
       max_depth:
         low: 5
-        high: 8
+        high: 10
       min_samples_split:
         low: 2
-        high: 6
+        high: 7
       min_samples_leaf:
         low: 2
         high: 7
@@ -36,17 +36,17 @@ model_selection:
     search_param_grid:
       n_estimators:
         low: 100
-        high: 200
-        step: 25
+        high: 300
+        step: 50
       max_depth:
-        low: 3
-        high: 8
+        low: 5
+        high: 10
       learning_rate:
         low: 0.01
         high: 0.1
       subsample:
         low: 0.5
-        high: 1.0
+        high: 0.8
       colsample_bytree:
         low: 0.6
         high: 0.8
