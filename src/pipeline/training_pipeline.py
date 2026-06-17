@@ -2,6 +2,7 @@ from src.components.data_ingestion import Data_Ingestion
 from src.components.data_validation import Data_Validation
 from src.components.data_transformation import Data_Transformation
 from src.components.model_trainer import Model_Trainer
+from src.components.model_evaluation import Model_Evaluation
 
 from src.entity.config_entity import (
     Data_Ingestion_Config,
@@ -14,7 +15,8 @@ from src.entity.artifact_entity import (
     Data_Ingestion_Artifact,
     Data_Validation_Artifact,
     Data_Transformation_Artifact,
-    Model_Trainer_Artifact
+    Model_Trainer_Artifact,
+    Model_Evaluation_Artifact
 )
 
 from src.exception import CustomException
@@ -103,6 +105,29 @@ class Training_Pipeline:
         except Exception as e:
             raise CustomException(e, sys)
         
+    
+    def get_model_evalution(self,
+        data_ingestion_artifact:Data_Ingestion_Artifact,
+        model_trainer_artifact:Model_Trainer_Artifact
+    ) -> Model_Evaluation_Artifact:
+        try:
+            logging.info(">>>>>>>>>>>  Model Evalution Started  >>>>>>>>>>>>")
+
+            model_evalution = Model_Evaluation(
+                model_eval_config = self.model_evaluation_config,
+                data_ingestion_artifact = data_ingestion_artifact,
+                model_trainer_artifact = model_trainer_artifact
+
+            )
+            model_evaluation_artifact = model_evalution.initiate_model_evaluation()
+
+            logging.info(">>>>>>>>>>>  Model Evalution Completed  >>>>>>>>>>>>")
+            logging.info(model_evaluation_artifact)
+
+            return model_evaluation_artifact
+        except Exception as e:
+            raise CustomException(e, sys)
+        
         
     def run_pipeline(self):
         try:
@@ -115,9 +140,12 @@ class Training_Pipeline:
                 data_ingestion_artifact, data_validation_artifact
             )
             model_trainer_artifact = self.get_model_trainer(data_transformation_artifact)
+            model_evalution_artifact = self.get_model_evalution(data_ingestion_artifact,model_trainer_artifact)
 
-
-            
+            logging.info("======= Training Pipeline Execution Completed Successfully =======")
+            if not model_evalution_artifact.is_model_accepted:
+                logging.info(f"Model not accepted.")
+                
             return None
 
         except Exception as e:
