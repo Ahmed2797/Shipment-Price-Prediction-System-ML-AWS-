@@ -117,3 +117,17 @@ class Model_Evaluation_Config:
     """
     bucket_name: str = MODEL_BUCKET_NAME
     s3_model_key_path: str =  PREDICTION_BEST_MODEL_OBJECT ## BEST_MODEL_OBJECT
+    changed_threshold_score: float = THRESHOLD
+
+
+@dataclass
+class Model_Pusher_Config:
+    """
+    Configuration class for pushing machine learning models to production storage.
+
+    Attributes:
+        bucket_name (str): Name of the S3 bucket where the model should be uploaded.
+        s3_model_key_path (str): S3 key path (file name) for saving the model in the bucket.
+    """
+    bucket_name: str = MODEL_BUCKET_NAME
+    s3_model_key_path: str = BEST_MODEL_OBJECT
