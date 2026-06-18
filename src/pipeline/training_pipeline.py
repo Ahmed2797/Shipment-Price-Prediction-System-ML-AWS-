@@ -3,12 +3,15 @@ from src.components.data_validation import Data_Validation
 from src.components.data_transformation import Data_Transformation
 from src.components.model_trainer import Model_Trainer
 from src.components.model_evaluation import Model_Evaluation
+from src.components.model_pusher import Model_Pusher
 
 from src.entity.config_entity import (
     Data_Ingestion_Config,
     Data_Validation_Config,
     Data_Transformation_Config,
-    Model_Trainer_Config
+    Model_Trainer_Config,
+    Model_Evaluation_Config,
+    Model_Pusher_Config
 )
 
 from src.entity.artifact_entity import (
@@ -16,7 +19,8 @@ from src.entity.artifact_entity import (
     Data_Validation_Artifact,
     Data_Transformation_Artifact,
     Model_Trainer_Artifact,
-    Model_Evaluation_Artifact
+    Model_Evaluation_Artifact,
+    Model_Pusher_Artifact
 )
 
 from src.exception import CustomException
@@ -30,7 +34,8 @@ class Training_Pipeline:
         self.data_validation_config = Data_Validation_Config()
         self.data_transformation_config = Data_Transformation_Config()
         self.model_trainer_config = Model_Trainer_Config()
-
+        self.model_evaluation_config = Model_Evaluation_Config()
+        self.model_pusher_config = Model_Pusher_Config()
 
 
     def get_started_data_ingestion(self) -> Data_Ingestion_Artifact:
@@ -128,6 +133,21 @@ class Training_Pipeline:
         except Exception as e:
             raise CustomException(e, sys)
         
+
+    def start_model_pusher(self, model_evaluation_artifact: Model_Evaluation_Artifact) -> Model_Pusher_Artifact:
+        """
+        This method of TrainPipeline class is responsible for starting model pushing
+        """
+        try:
+            model_pusher = Model_Pusher(model_evaluation_artifact=model_evaluation_artifact,
+                                       model_pusher_config=self.model_pusher_config
+                                       )
+            model_pusher_artifact = model_pusher.initiate_model_pusher()
+            return model_pusher_artifact
+        except Exception as e:
+            raise CustomException(e, sys)
+        
+        
         
     def run_pipeline(self):
         try:
@@ -145,7 +165,10 @@ class Training_Pipeline:
             logging.info("======= Training Pipeline Execution Completed Successfully =======")
             if not model_evalution_artifact.is_model_accepted:
                 logging.info(f"Model not accepted.")
-                
+
+            model_pusher_artifact = self.start_model_pusher(model_evaluation_artifact=model_evalution_artifact)
+
+
             return None
 
         except Exception as e:
