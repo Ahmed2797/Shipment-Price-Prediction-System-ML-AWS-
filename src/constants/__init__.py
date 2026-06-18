@@ -60,7 +60,7 @@ MODEL_TRAINER_DIR = 'model_trainer'
 MODEL_TRAINER_FILE_PATH = 'best_model'
 BEST_MODEL_OBJECT = 'best_model.pkl'
 PREDICTION_BEST_MODEL_OBJECT = 'pred_model.pkl'
-EXCEPTED_SCORE:float = 0.7
+EXCEPTED_SCORE:float = 0.9
 THRESHOLD:int = 0.35
 
 
