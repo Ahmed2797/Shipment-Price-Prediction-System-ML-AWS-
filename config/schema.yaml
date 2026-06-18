@@ -29,12 +29,12 @@ numerical_columns:
   - Weight
   - Price Of Sculpture
   - Base Shipping Price
-  - Delivery_Days
-  - Scheduled_Month
-  - Size
-  - Price_per_Weight
-  - Price_per_Size
-  - Weight_to_Size
+  # - Delivery_Days
+  # - Scheduled_Month
+  # - Size
+  # - Price_per_Weight
+  # - Price_per_Size
+  # - Weight_to_Size
 
 categorical_columns:
   - Customer Id
