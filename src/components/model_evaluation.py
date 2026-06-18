@@ -16,7 +16,7 @@ from src.entity.artifact_entity import (
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_object, read_yaml
-from src.constants import COLUMN_YAML_FILE_PATH
+from src.constants import COLUMN_YAML_FILE_PATH, Target_Column
 from src.entity.s3_estimator import AWSEstimator
 
 
@@ -86,14 +86,21 @@ class Model_Evaluation:
             )
 
 
-            # AWS production mode (enable later):
+            # AWS production mode: if AWS is configured, try it, but do not fail over S3 issues.
             bucket_name = self.model_eval_config.bucket_name
             model_key = self.model_eval_config.s3_model_key_path
-            model_estimator = AWSEstimator(bucket_name=bucket_name, model_key=model_key)
-            if model_estimator.is_model_present():
-                # return actual loaded model and identifier
-                loaded = model_estimator.load_model()
-                return loaded, model_key
+            if bucket_name and model_key:
+                try:
+                    model_estimator = AWSEstimator(bucket_name=bucket_name, model_key=model_key)
+                    if model_estimator.is_model_present():
+                        # return actual loaded model and identifier
+                        loaded = model_estimator.load_model()
+                        return loaded, model_key
+                except Exception as e:
+                    logging.warning(
+                        'AWS baseline model check failed; continuing without AWS baseline.'
+                    )
+                    logging.warning(str(e))
 
             return None
             
@@ -157,7 +164,24 @@ class Model_Evaluation:
             return np.log1p(np.abs(y.values))
         except Exception as e:
             raise CustomException(e, sys)
+        
+    def _prepare_features_and_target(self) -> tuple[pd.DataFrame, pd.Series]:
+        """
+        Load evaluation data and separate features from target.
+        """
+        try:
+            test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
+            if Target_Column not in test_df.columns:
+                raise CustomException(
+                    f"Target column '{Target_Column}' not found in evaluation data.",
+                    sys,
+                )
 
+            x = test_df.drop(columns=[Target_Column], errors="ignore")
+            y = test_df[Target_Column]
+            return x, y
+        except Exception as e:
+            raise CustomException(e, sys)
 
     def _predict_with_any_model(self, model_obj: Any, x_raw: pd.DataFrame) -> np.ndarray:
         """
