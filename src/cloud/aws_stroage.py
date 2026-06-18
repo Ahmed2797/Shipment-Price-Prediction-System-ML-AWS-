@@ -12,6 +12,7 @@ Use Case    : Data ingestion, model registry, prediction services
 import os
 import sys
 import pickle
+import joblib
 from io import StringIO
 from typing import Optional
 
@@ -165,7 +166,7 @@ class S3StorageService:
             key = f"{model_dir}/{model_name}" if model_dir else model_name
             s3_object = self.get_object(bucket_name, key)
             binary_data = self.read_object(s3_object, decode=False)
-            return pickle.loads(binary_data)
+            return joblib.loads(binary_data)
         except Exception as e:
             raise CustomException(e, sys)
 
