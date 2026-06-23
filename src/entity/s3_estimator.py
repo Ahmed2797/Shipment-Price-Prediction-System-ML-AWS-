@@ -10,7 +10,7 @@ from pandas import DataFrame
 
 from src.cloud.aws_stroage import S3StorageService
 from src.exception import CustomException
-from src.entity.estimator import ShipmentPricePredictor
+from src.entity.estimator import ShipmentPriceEstimator
 
 
 class AWSEstimator:
@@ -29,7 +29,7 @@ class AWSEstimator:
         self.bucket_name = bucket_name
         self.model_key = model_key
         self.s3 = S3StorageService()
-        self._model: Optional[ShipmentPricePredictor] = None
+        self._model: Optional[ShipmentPriceEstimator] = None
 
     def is_model_present(self) -> bool:
         """
@@ -46,7 +46,7 @@ class AWSEstimator:
         except Exception as e:
             raise CustomException(e, sys)
 
-    def load_model(self) -> ShipmentPricePredictor:
+    def load_model(self) -> ShipmentPriceEstimator:
         """
         Load model from S3 (cached after first load).
 
