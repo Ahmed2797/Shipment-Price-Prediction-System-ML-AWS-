@@ -19,7 +19,7 @@ from src.entity.artifact_entity import (
     RegressionMetricArtifact
 )
 from src.entity.config_entity import Model_Trainer_Config
-from src.entity.estimator import ShipmentPricePredictor
+# from src.pipeline.prediction_pipeline import ShipmentPricePredictor
 from src.constants import THRESHOLD
 from src.utils import load_numpy_array, load_object, save_object, read_yaml
 
@@ -28,7 +28,7 @@ import mlflow.sklearn
 
 import dagshub
 
-dagshub.init(repo_owner='Ahmed2797', repo_name='Shipment-Price-Prediction-System-ML-AWS-', mlflow=True)
+# dagshub.init(repo_owner='Ahmed2797', repo_name='Shipment-Price-Prediction-System-ML-AWS-', mlflow=True)
 
 class Model_Trainer:
     """
@@ -393,21 +393,21 @@ class Model_Trainer:
             
             logging.info(f"Best model metrics: {best_model_metrics}")
 
-            # Load preprocessing object
-            preprocessor_obj = load_object(self.data_transformation_artifact.preprocessing_pkl)
+            # # Load preprocessing object
+            # preprocessor_obj = load_object(self.data_transformation_artifact.preprocessing_pkl)
 
-            # Wrap model with preprocessing pipeline
-            prediction_model = ShipmentPricePredictor(
-                transform_object=preprocessor_obj,
-                trained_model=best_model_obj
-            )
-            logging.info("Prediction pipeline object created successfully.")
+            # # Wrap model with preprocessing pipeline
+            # prediction_model = ShipmentPricePredictor(
+            #     transform_object=preprocessor_obj,
+            #     trained_model=best_model_obj
+            # )
+            # logging.info("Prediction pipeline object created successfully.")
             
-            # Ensure directory for final model exists
-            os.makedirs(os.path.dirname(self.model_trainer_config.final_model_path), exist_ok=True)
+            # # Ensure directory for final model exists
+            # os.makedirs(os.path.dirname(self.model_trainer_config.final_model_path), exist_ok=True)
 
-            # Save final pipeline and model
-            save_object(self.model_trainer_config.final_model_path, prediction_model)
+            # # Save final pipeline and model
+            # save_object(self.model_trainer_config.final_model_path, prediction_model)
 
             # Save raw model object separately
             best_model_path = os.path.join(self.model_trainer_config.model_train_dir, "best_model.pkl")
@@ -451,24 +451,24 @@ class Model_Trainer:
                 }
 
             # Track final model in MLflow with best hyperparameters and CV score
-            try:
-                self.track_mlflow(
-                    model_path=best_model_path,
-                    model_obj=best_model_obj,
-                    metrics=mlflow_metrics,
-                    params=best_result.get("BestParams", {}),
-                    tags={
-                        "best_model_name": best_result.get("Model", "unknown"),
-                        "model_type": "regression" if is_regression else "classification",
-                        "cv_folds": str(best_result.get("CV", "unknown")),
-                        "optuna_scoring": best_result.get("Scoring", "unknown"),
-                        "optuna_trials": str(best_result.get("NTrials", "unknown")),
-                        "optuna_direction": best_result.get("Direction", "unknown")
-                    },
-                    run_name=f"model_trainer_{best_result.get('Model', 'best_model')}"
-                )
-            except Exception as mlflow_error:
-                logging.warning(f"MLflow tracking failed, but training artifacts are still saved: {mlflow_error}")
+            # try:
+            #     self.track_mlflow(
+            #         model_path=best_model_path,
+            #         model_obj=best_model_obj,
+            #         metrics=mlflow_metrics,
+            #         params=best_result.get("BestParams", {}),
+            #         tags={
+            #             "best_model_name": best_result.get("Model", "unknown"),
+            #             "model_type": "regression" if is_regression else "classification",
+            #             "cv_folds": str(best_result.get("CV", "unknown")),
+            #             "optuna_scoring": best_result.get("Scoring", "unknown"),
+            #             "optuna_trials": str(best_result.get("NTrials", "unknown")),
+            #             "optuna_direction": best_result.get("Direction", "unknown")
+            #         },
+            #         run_name=f"model_trainer_{best_result.get('Model', 'best_model')}"
+            #     )
+            # except Exception as mlflow_error:
+            #     logging.warning(f"MLflow tracking failed, but training artifacts are still saved: {mlflow_error}")
             
             logging.info("✓ Model training and saving completed successfully.")
 
