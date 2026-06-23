@@ -209,6 +209,7 @@ class Data_Transformation:
         if "Scheduled Date" in df.columns and "Delivery Date" in df.columns:
             df["Delivery_Days"] = (df["Scheduled Date"] - df["Delivery Date"]).dt.days
             df["Delivery_Days"] = df["Delivery_Days"].fillna(df["Delivery_Days"].median())
+            df["Delivery_Days"] = np.abs(df["Delivery_Days"])
         
         # # ---- Size features ----
         # if "Height" in df.columns and "Width" in df.columns:
@@ -233,10 +234,7 @@ class Data_Transformation:
         #     df["Weight_to_Size"] = df["Weight_to_Size"].fillna(df["Weight_to_Size"].median())
         
         logging.info(f"Feature engineering completed. New features: "
-                    f"Scheduled_Month, Delivery_Days, Size, Price_per_Weight, "
-                    f"Price_per_Size, Weight_to_Size")
-        
-        df.head(5)
+                    f"Scheduled_Month, Delivery_Days")
         
         return df
 
@@ -409,6 +407,8 @@ class Data_Transformation:
             logging.info("Step 3: Creating engineered features...")
             train_df = self.apply_feature_engineering(train_df)
             test_df = self.apply_feature_engineering(test_df)
+            print(train_df.head())
+            logging.info(f"Columns: {train_df.columns}")
 
             # ---- STEP 4: Drop unnecessary columns ----
             logging.info("Step 4: Dropping unnecessary columns...")
