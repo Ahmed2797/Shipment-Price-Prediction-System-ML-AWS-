@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Price Prediction</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Shipment Price Prediction</h1>
+
+    <form action="/predict" method="post">
+        <div class="form-group">
+            <label for="Artist_Reputation">Artist Reputation:</label>
+            <input id="Artist_Reputation" name="Artist_Reputation" placeholder="e.g. 0.85" type="number" step="any" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Height">Height:</label>
+            <input id="Height" name="Height" placeholder="Height" type="number" step="any" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Width">Width:</label>
+            <input id="Width" name="Width" placeholder="Width" type="number" step="any" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Weight">Weight:</label>
+            <input id="Weight" name="Weight" placeholder="Weight" type="number" step="any" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Price_Of_Sculpture">Price Of Sculpture:</label>
+            <input id="Price_Of_Sculpture" name="Price_Of_Sculpture" placeholder="Price Of Sculpture" type="number" step="any" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Base_Shipping_Price">Base Shipping Price:</label>
+            <input id="Base_Shipping_Price" name="Base_Shipping_Price" placeholder="Base Shipping Price" type="number" step="any" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Material">Material:</label>
+            <input id="Material" name="Material" placeholder="e.g. Wood, Marble, Bronze" required>
+        </div>
+
+        <div class="form-group">
+            <label for="International">International Shipment:</label>
+            <input id="International" name="International" placeholder="Yes / No" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Express_Shipment">Express Shipment:</label>
+            <input id="Express_Shipment" name="Express_Shipment" placeholder="Yes / No" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Installation_Included">Installation Included:</label>
+            <input id="Installation_Included" name="Installation_Included" placeholder="Yes / No" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Transport">Transport Mode:</label>
+            <input id="Transport" name="Transport" placeholder="e.g. Airways, Roadways" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Fragile">Fragile Item:</label>
+            <input id="Fragile" name="Fragile" placeholder="Yes / No" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Customer_Information">Customer Type:</label>
+            <input id="Customer_Information" name="Customer_Information" placeholder="e.g. Working Class, Wealthy" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Remote_Location">Remote Location:</label>
+            <input id="Remote_Location" name="Remote_Location" placeholder="Yes / No" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Customer_Location">Customer Location:</label>
+            <input id="Customer_Location" name="Customer_Location" placeholder="e.g. New York, NY 10001" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Scheduled_Date">Scheduled Date:</label>
+            <input id="Scheduled_Date" name="Scheduled_Date" type="date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Delivery_Date">Delivery Date:</label>
+            <input id="Delivery_Date" name="Delivery_Date" type="date" required>
+        </div>
+
+        <button type="submit">Predict Cost</button>
+    </form>
+
+    {% if prediction %}
+    <div class="result-box">
+        <h2>Predicted Shipment Cost: {{ prediction }}</h2>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

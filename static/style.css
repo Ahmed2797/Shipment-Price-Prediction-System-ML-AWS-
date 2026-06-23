@@ -1,0 +1,75 @@
+body {
+    background: #f2f2f2;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 500px;
+    margin: 50px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #aaa;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* Form groups keep the labels and inputs cleanly separated */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Styled labels for a neat, accessible layout */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #444;
+}
+
+/* Added explicit box-sizing so padding doesn't break your 100% width layout */
+input, select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; 
+    font-size: 14px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #333;
+    color: rgb(246, 74, 74);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 15px;
+}
+
+button:hover {
+    background: #555;
+}
+
+/* Added styling for the prediction result output box */
+.result-box {
+    margin-top: 25px;
+    padding: 15px;
+    background: #74d0e3;
+    border-left: 5px solid #74410f;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.result-box h2 {
+    margin: 0;
+    color: #137333;
+    font-size: 20px;
+}
