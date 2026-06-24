@@ -473,7 +473,8 @@ class Model_Trainer:
             logging.info("✓ Model training and saving completed successfully.")
 
             return Model_Trainer_Artifact(
-                trained_model_file_path=self.model_trainer_config.final_model_path,
+                trained_model_file_path=self.model_trainer_config.best_model_object,
+                # trained_model_file_path=self.model_trainer_config.final_model_path,
                 metric_artifact=metrics_artifact
             )
 
