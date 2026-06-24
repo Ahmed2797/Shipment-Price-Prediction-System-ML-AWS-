@@ -116,7 +116,7 @@ class Model_Evaluation_Config:
         s3_model_key_path (str): S3 key path (file name) of the model to be evaluated.
     """
     bucket_name: str = MODEL_BUCKET_NAME
-    s3_model_key_path: str =  PREDICTION_BEST_MODEL_OBJECT ## BEST_MODEL_OBJECT
+    s3_model_key_path: str =  MODEL_PUSHER_S3_MODEL_PATH ## BEST_MODEL_OBJECT
     changed_threshold_score: float = THRESHOLD
 
 
@@ -130,4 +130,5 @@ class Model_Pusher_Config:
         s3_model_key_path (str): S3 key path (file name) for saving the model in the bucket.
     """
     bucket_name: str = MODEL_BUCKET_NAME
-    s3_model_key_path: str = BEST_MODEL_OBJECT
+    s3_model_key_path: str = MODEL_PUSHER_S3_MODEL_PATH ## BEST_MODEL_OBJECT
+    s3_preprocessing_obj_path:str = MODEL_PUSHER_S3_PREPROCESSING_PATH
