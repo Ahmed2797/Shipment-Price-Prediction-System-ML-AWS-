@@ -113,6 +113,7 @@ class Training_Pipeline:
     
     def get_model_evalution(self,
         data_ingestion_artifact:Data_Ingestion_Artifact,
+        data_transformation_artifact:Data_Transformation_Artifact,
         model_trainer_artifact:Model_Trainer_Artifact
     ) -> Model_Evaluation_Artifact:
         try:
@@ -121,6 +122,7 @@ class Training_Pipeline:
             model_evalution = Model_Evaluation(
                 model_eval_config = self.model_evaluation_config,
                 data_ingestion_artifact = data_ingestion_artifact,
+                data_transformation_artifact = data_transformation_artifact,
                 model_trainer_artifact = model_trainer_artifact
 
             )
@@ -134,15 +136,20 @@ class Training_Pipeline:
             raise CustomException(e, sys)
         
 
-    def start_model_pusher(self, model_evaluation_artifact: Model_Evaluation_Artifact) -> Model_Pusher_Artifact:
+    def start_model_pusher(self, model_evaluation_artifact: Model_Evaluation_Artifact, data_transformation_artifact: Data_Transformation_Artifact) -> Model_Pusher_Artifact:
         """
         This method of TrainPipeline class is responsible for starting model pushing
         """
         try:
             model_pusher = Model_Pusher(model_evaluation_artifact=model_evaluation_artifact,
+                                        data_transformation_artifact = data_transformation_artifact,
                                        model_pusher_config=self.model_pusher_config
                                        )
             model_pusher_artifact = model_pusher.initiate_model_pusher()
+
+            logging.info(">>>>>>>>>>>  Model Pusher Completed  >>>>>>>>>>>>")
+            logging.info(model_pusher_artifact)
+
             return model_pusher_artifact
         except Exception as e:
             raise CustomException(e, sys)
@@ -160,13 +167,18 @@ class Training_Pipeline:
                 data_ingestion_artifact, data_validation_artifact
             )
             model_trainer_artifact = self.get_model_trainer(data_transformation_artifact)
-            model_evalution_artifact = self.get_model_evalution(data_ingestion_artifact,model_trainer_artifact)
+            model_evalution_artifact = self.get_model_evalution(data_ingestion_artifact,data_transformation_artifact,model_trainer_artifact)
 
             logging.info("======= Training Pipeline Execution Completed Successfully =======")
             if not model_evalution_artifact.is_model_accepted:
                 logging.info(f"Model not accepted.")
 
-            model_pusher_artifact = self.start_model_pusher(model_evaluation_artifact=model_evalution_artifact)
+            model_pusher_artifact = self.start_model_pusher(model_evalution_artifact,
+                                                            data_transformation_artifact)
+
+            logging.info("x" * 60)
+            logging.info("======= Training Pipeline Execution Completted =======")
+            print("End To End Machine Learning completed")
 
 
             return None
