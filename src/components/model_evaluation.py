@@ -10,9 +10,11 @@ from sklearn.metrics import r2_score, mean_absolute_error
 from src.entity.config_entity import Data_Transformation_Config, Model_Evaluation_Config
 from src.entity.artifact_entity import (
     Data_Ingestion_Artifact,
+    Data_Transformation_Artifact,
     Model_Evaluation_Artifact,
     Model_Trainer_Artifact,
 )
+from src.entity.estimator import ShipmentPricePredictor
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_object, read_yaml
@@ -34,6 +36,7 @@ class Model_Evaluation:
         self,
         model_eval_config: Model_Evaluation_Config,
         data_ingestion_artifact: Data_Ingestion_Artifact,
+        data_transformation_artifact : Data_Transformation_Artifact,
         model_trainer_artifact: Model_Trainer_Artifact,
     ):
         try:
@@ -41,6 +44,7 @@ class Model_Evaluation:
             self.data_ingestion_artifact = data_ingestion_artifact
             self.model_trainer_artifact = model_trainer_artifact
             self._column_schema = read_yaml(COLUMN_YAML_FILE_PATH)
+            self.data_transformation_artifact = data_transformation_artifact
         except Exception as e:
             raise CustomException(e, sys) from e
 
@@ -222,7 +226,16 @@ class Model_Evaluation:
         try:
             x, y_true = self._prepare_features_and_target()
 
-            trained_model = load_object(file_path=self.model_trainer_artifact.trained_model_file_path)
+            # Load preprocessing object
+            preprocessor_obj = load_object(self.data_transformation_artifact.preprocessing_pkl)
+            best_model_obj = load_object(self.model_trainer_artifact.trained_model_file_path)
+
+            # Wrap model with preprocessing pipeline
+            prediction_model = ShipmentPricePredictor(
+                transform_object=preprocessor_obj,
+                trained_model=best_model_obj
+            )
+            logging.info("Prediction pipeline object created successfully.")
 
             # Ensure y_true is prepared using same transformation as training
             if isinstance(y_true, np.ndarray):
@@ -230,7 +243,7 @@ class Model_Evaluation:
             else:
                 y_true_prep = self._prepare_target(y_true)
 
-            y_hat_trained = self._predict_with_any_model(trained_model, x)
+            y_hat_trained = self._predict_with_any_model(prediction_model, x)
 
             trained_r2 = r2_score(y_true_prep, y_hat_trained)
             trained_mae = mean_absolute_error(y_true_prep, y_hat_trained)
