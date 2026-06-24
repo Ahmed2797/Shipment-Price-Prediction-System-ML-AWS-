@@ -1,5 +1,5 @@
 optuna:
-  n_trials: 5
+  n_trials: 2
   cv: 3
   scoring: r2
   direction: maximize
