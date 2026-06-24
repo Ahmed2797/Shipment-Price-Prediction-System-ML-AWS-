@@ -9,49 +9,97 @@ from src.logger import logging
 from src.utils import read_yaml
 
 
-class ShipmentPriceEstimator:
-    """
-    Production-ready execution pipeline wrapping ingestion, cleaning, 
-    feature extraction, transformation, and model execution.
+class ShipmentPricePredictor:
+    """A pipeline class to preprocess shipment data and predict shipment costs.
+
+    This class handles the end-to-end inference pipeline, including data type 
+    validation, cleaning, feature engineering, mathematical transformations, 
+    and model prediction.
+
+    Attributes:
+        transform_object: A trained Sklearn-compliant transformer pipeline 
+            (e.g., ColumnTransformer).
+        trained_model (BaseEstimator): A trained Scikit-Learn estimator model.
+        column_schema (dict): Schema configurations loaded from a YAML file.
     """
 
     def __init__(self, transform_object, trained_model: BaseEstimator):
-        self.transform_object = transform_object
-        self.trained_model = trained_model
+        """Initializes the predictor with transformers, models, and schema configs.
+
+        Args:
+            transform_object: The pre-fitted transformation object/pipeline.
+            trained_model (BaseEstimator): The pre-trained ML model object.
+
+        Raises:
+            CustomException: If any error occurs during initialization or 
+                YAML reading.
+        """
         try:
-            self._column_schema = read_yaml(COLUMN_YAML_FILE_PATH)
+            self.transform_object = transform_object
+            self.trained_model = trained_model
+            self.column_schema = read_yaml(COLUMN_YAML_FILE_PATH)
         except Exception as e:
-            raise CustomException(
-                f"Unable to load schema configuration for runtime inference: {e}",
-                sys
-            )
+            raise CustomException(e, sys)
 
     @staticmethod
-    def _to_dataframe(data) -> pd.DataFrame:
+    def to_dataframe(data) -> pd.DataFrame:
+        """Converts the input data into a pandas DataFrame format.
+
+        Args:
+            data (dict or pd.DataFrame): Input data to be converted.
+
+        Returns:
+            pd.DataFrame: A shallow copy of the dataframe or a new single-row dataframe.
+
+        Raises:
+            ValueError: If the input data is neither a dictionary nor a DataFrame.
+        """
         if isinstance(data, dict):
             return pd.DataFrame([data])
+
         if isinstance(data, pd.DataFrame):
             return data.copy()
-        raise ValueError("Input data payload must be a python dict or pandas DataFrame")
 
-    @staticmethod
-    def _clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+        raise ValueError("Input must be a dict or a pandas DataFrame")
+
+    def clean_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Cleans string columns by stripping whitespace and normalizing missing value placeholders.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame to clean.
+
+        Returns:
+            pd.DataFrame: Cleaned DataFrame with standard np.nan values for empty fields.
+        """
         df = df.copy()
-        object_cols = df.select_dtypes(include=["object"]).columns
+        object_columns = df.select_dtypes(include=["object"]).columns
 
-        # Vectorized string cleaning and standardization of missing indicators
-        for col in object_cols:
+        for col in object_columns:
             df[col] = df[col].astype(str).str.strip()
             df[col] = df[col].replace(
-                {"": np.nan, "na": np.nan, "nan": np.nan, "null": np.nan, "none": np.nan}
+                {
+                    "": np.nan,
+                    "na": np.nan,
+                    "nan": np.nan,
+                    "null": np.nan,
+                    "none": np.nan
+                }
             )
         return df
 
-    @staticmethod
-    def _feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
+    def feature_engineering(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Derives time-based features from 'Scheduled Date' and 'Delivery Date'.
+
+        Extracts the scheduled month and calculates the total delivery days delta.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame containing the newly engineered features.
+        """
         df = df.copy()
 
-        # 1. Convert temporal features safely to datetime objects
         if "Scheduled Date" in df.columns:
             df["Scheduled Date"] = pd.to_datetime(df["Scheduled Date"], errors="coerce")
             df["Scheduled_Month"] = df["Scheduled Date"].dt.month
@@ -59,83 +107,146 @@ class ShipmentPriceEstimator:
         if "Delivery Date" in df.columns:
             df["Delivery Date"] = pd.to_datetime(df["Delivery Date"], errors="coerce")
 
-        # 2. FIXED: Delivery Days calculation must be (End Date - Start Date)
         if "Scheduled Date" in df.columns and "Delivery Date" in df.columns:
             df["Delivery_Days"] = (df["Delivery Date"] - df["Scheduled Date"]).dt.days
-            
-            # Fill eventual negative dates or NaNs from broken data payloads with a baseline fallback
-            df["Delivery_Days"] = df["Delivery_Days"].fillna(0).clip(lower=0)
 
         return df
 
-    def _drop_unused_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        drop_cols = self._column_schema.get("drop_columns", [])
+    def drop_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Drops unnecessary columns specified in the column schema.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame with designated columns dropped.
+        """
+        drop_cols = self.column_schema.get("drop_columns", [])
         return df.drop(columns=drop_cols, errors="ignore")
 
-    def _apply_log_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+    def log_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Applies log1p transformation to specified highly skewed columns.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame with log-transformed features.
+        """
         df = df.copy()
-        log_cols = self._column_schema.get("log_transform_col", [])
-        for col in log_cols:
+        cols = self.column_schema.get("log_transform_col", [])
+
+        for col in cols:
             if col in df.columns:
-                # clip(lower=0) protects against negative values throwing RuntimeWarnings
-                df[col] = np.log1p(pd.to_numeric(df[col], errors="coerce").clip(lower=0))
+                df[col] = np.log1p(df[col].clip(lower=0))
         return df
 
-    def _apply_power_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+    def power_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Applies a square root transformation to specified columns.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame with square-root transformed features.
+        """
         df = df.copy()
-        power_cols = self._column_schema.get("power_transform_col", [])
-        for col in power_cols:
+        cols = self.column_schema.get("power_transform_col", [])
+
+        for col in cols:
             if col in df.columns:
-                df[col] = np.power(pd.to_numeric(df[col], errors="coerce").clip(lower=0), 0.5)
+                df[col] = np.sqrt(df[col].clip(lower=0))
         return df
 
-    def _ensure_required_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Construct exact operational schema matching what the transform_object expects
-        expected_columns = []
-        expected_columns.extend(self._column_schema.get("numerical_columns", []))
-        expected_columns.extend(self._column_schema.get("multi_categorical_columns", []))
+    def prepare_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Ensures all required columns exist in the DataFrame before transformation.
 
+        Missing columns are initialized with np.nan to avoid structural errors.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame matching schema requirements.
+        """
         df = df.copy()
-        for col in expected_columns:
+        required_columns = []
+        required_columns.extend(self.column_schema.get("numerical_columns", []))
+        required_columns.extend(self.column_schema.get("multi_categorical_columns", []))
+
+        for col in required_columns:
             if col not in df.columns:
-                logging.warning(f"Expected column '{col}' missing from inference payload. Imputing NaN.")
                 df[col] = np.nan
 
-        # Enforce exact column ordering
-        return df[expected_columns]
+        return df
 
-    def _prepare_input(self, data) -> pd.DataFrame:
-        df = self._to_dataframe(data)
-        df = self._clean_dataframe(df)
-        df = self._feature_engineering(df)
-        df = self._drop_unused_columns(df)
-        df = self._apply_log_transform(df)
-        df = self._apply_power_transform(df)
+    def preprocess(self, data) -> pd.DataFrame:
+        """Executes the sequence of cleaning, engineering, and structural prep steps.
+
+        Args:
+            data (dict or pd.DataFrame): Raw payload data.
+
+        Returns:
+            pd.DataFrame: Completely processed DataFrame ready for transform object.
+        """
+        df = self.to_dataframe(data)
+        df = self.clean_dataframe(df)
+        df = self.feature_engineering(df)
+        df = self.drop_columns(df)
+        df = self.log_transform(df)
+        df = self.power_transform(df)
 
         if Target_Column in df.columns:
             df = df.drop(columns=[Target_Column])
 
-        return self._ensure_required_columns(df)
+        df = self.prepare_columns(df)
+        return df
 
     def predict(self, data) -> pd.DataFrame:
+        """Generates cost predictions for bulk or batch input records.
+
+        Preprocesses data, transforms features via the pipeline, generates 
+        predictions, and converts the target log-scale output back to currency space.
+
+        Args:
+            data (dict or pd.DataFrame): Input batch records or single record.
+
+        Returns:
+            pd.DataFrame: DataFrame containing a "Predicted_Shipment_Cost" column.
+
+        Raises:
+            CustomException: Wraps any processing or model evaluation errors.
+        """
         try:
-            logging.info("Starting shipment cost execution pipeline.")
-            df = self._prepare_input(data)
+            logging.info("Prediction started")
+            df = self.preprocess(data)
 
-            # Pass processed dataframe through Scikit-Learn pipeline object
-            transformed_features = self.transform_object.transform(df)
-            predictions = self.trained_model.predict(transformed_features)
-
-            logging.info("Prediction vector generated successfully.")
-            return pd.DataFrame({"Predicted_Shipment_Cost": predictions})
+            transformed_data = self.transform_object.transform(df)
+            prediction = self.trained_model.predict(transformed_data)
+            # prediction = np.array(prediction).flatten()
+            
+            # Convert back from log scale log1p -> expm1
+            prediction = np.expm1(prediction)
+            
+            result = pd.DataFrame({"Predicted_Shipment_Cost": prediction})
+            logging.info("Prediction completed")
+            print("Prediction completed",result)
+            return result
 
         except Exception as e:
-            logging.error(f"Error encountered during prediction pipeline execution: {e}")
-            raise CustomException(e, sys) from e
+            raise CustomException(e, sys)
 
     def predict_single(self, data) -> float:
+        """Generates a scalar cost prediction for a single instance payload.
+
+        Args:
+            data (dict or pd.DataFrame): A single record input data.
+
+        Returns:
+            float: The predicted shipment cost value.
         """
-        Runs inference over a singular dictionary record and returns a direct float value.
-        """
-        prediction_df = self.predict(data)
-        return float(prediction_df["Predicted_Shipment_Cost"].iloc[0])
+        # Call base predict method which transforms data and corrects log-scaling
+        result = self.predict(data)
+        
+        # Extracted directly from DataFrame as a float
+        return float(result.iloc[0, 0])
