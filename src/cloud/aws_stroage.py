@@ -166,7 +166,7 @@ class S3StorageService:
             key = f"{model_dir}/{model_name}" if model_dir else model_name
             s3_object = self.get_object(bucket_name, key)
             binary_data = self.read_object(s3_object, decode=False)
-            return joblib.loads(binary_data)
+            return joblib.load(binary_data)
         except Exception as e:
             raise CustomException(e, sys)
 
