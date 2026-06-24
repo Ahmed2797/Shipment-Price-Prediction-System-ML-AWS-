@@ -1,5 +1,6 @@
 import sys
 from typing import Optional
+from pathlib import Path
 from src.exception import CustomException
 from src.logger import logging
 from src.entity.artifact_entity import (
@@ -30,13 +31,13 @@ class Model_Pusher:
         self.data_transformation_artifact = data_transformation_artifact
         self.model_evaluation_artifact = model_evaluation_artifact
         
-        # Initialize your estimators/uploaders
-        # Note: If your AWSEstimator takes a directory prefix rather than a file key, 
-        # ensure your s3_model_key_path reflects a folder structure.
-        self.model_estimator = AWSEstimator(
-            bucket_name=self.model_pusher_config.bucket_name,
-            model_key=self.model_pusher_config.s3_model_key_path
-        )
+        # # Initialize your estimators/uploaders
+        # # Note: If your AWSEstimator takes a directory prefix rather than a file key, 
+        # # ensure your s3_model_key_path reflects a folder structure.
+        # self.model_estimator = AWSEstimator(
+        #     bucket_name=self.model_pusher_config.bucket_name,
+        #     model_key=self.model_pusher_config.s3_model_key_path
+        # )
 
     def initiate_model_pusher(self) -> Model_Pusher_Artifact:
         """
@@ -48,22 +49,43 @@ class Model_Pusher:
         logging.info("Initiating model pusher process...")
 
         try:
-            # 1. Validate local files exist before attempting expensive cloud operations
-            local_preprocessing_path = self.data_transformation_artifact.preprocessing_pkl
-            local_model_path = self.model_evaluation_artifact.trained_model_path
+            # from pathlib import Path
 
-            logging.info(f"Uploading preprocessing object from: {local_preprocessing_path}")
-            # ASSUMPTION: If save_model requires a target file path on S3, 
-            # ensure your AWSEstimator handles key concatenation internally, 
-            # otherwise pass unique target keys for each file.
-            self.model_estimator.save_model(
-                local_model_path=local_preprocessing_path,
+            # 1. Cast your string paths to Path objects
+            local_preprocessing_path = Path(self.data_transformation_artifact.preprocessing_pkl)
+            local_model_path = Path(self.model_evaluation_artifact.trained_model_path)
+
+            # 2. Extract only the filenames using '.name' (replaces os.path.basename)
+            preprocessing_filename = local_preprocessing_path.name
+            model_filename = local_model_path.name
+
+            # 3. Combine with S3 configurations using Path, but convert to POSIX string for AWS S3
+            s3_preprocessor_key = str(
+                Path(self.model_pusher_config.s3_preprocessing_obj_path) / preprocessing_filename
+            ).replace("\\", "/")
+
+            s3_model_key = str(
+                Path(self.model_pusher_config.s3_model_key_path) / model_filename
+            ).replace("\\", "/")
+
+            # 4. Execute uploads using the clean strings
+            logging.info(f"Uploading preprocessing object to S3: {s3_preprocessor_key}")
+            preprocessing_estimator = AWSEstimator(
+                bucket_name=self.model_pusher_config.bucket_name,
+                model_key=s3_preprocessor_key
+            )
+            preprocessing_estimator.save_model(
+                local_model_path=str(local_preprocessing_path),  # Some older S3 wrappers require strings
                 remove_local=False
             )
 
-            logging.info(f"Uploading trained model artifact from: {local_model_path}")
-            self.model_estimator.save_model(
-                local_model_path=local_model_path,
+            logging.info(f"Uploading trained model artifact to S3: {s3_model_key}")
+            model_estimator = AWSEstimator(
+                bucket_name=self.model_pusher_config.bucket_name,
+                model_key=s3_model_key
+            )
+            model_estimator.save_model(
+                local_model_path=str(local_model_path),
                 remove_local=False
             )
 
