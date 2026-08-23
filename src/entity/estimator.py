@@ -23,11 +23,12 @@ class ShipmentPricePredictor:
         column_schema (dict): Schema configurations loaded from a YAML file.
     """
 
-    def __init__(self, transform_object, trained_model: BaseEstimator):
+    def __init__(self, transform_object, power_transformer, trained_model: BaseEstimator):
         """Initializes the predictor with transformers, models, and schema configs.
 
         Args:
             transform_object: The pre-fitted transformation object/pipeline.
+            power_transformer: The pre-fitted power transformer object.
             trained_model (BaseEstimator): The pre-trained ML model object.
 
         Raises:
@@ -37,6 +38,8 @@ class ShipmentPricePredictor:
         try:
             self.transform_object = transform_object
             self.trained_model = trained_model
+            self.power_transformer = power_transformer 
+            ## Professional approach Power transformer inside ColumnTransformer to apply power transformation to specific columns
             self.column_schema = read_yaml(COLUMN_YAML_FILE_PATH)
         except Exception as e:
             raise CustomException(e, sys)
@@ -152,11 +155,28 @@ class ShipmentPricePredictor:
         """
         df = df.copy()
         cols = self.column_schema.get("power_transform_col", [])
+        valid_cols = [col for col in cols if col in df.columns]
 
-        for col in cols:
-            if col in df.columns:
-                df[col] = np.sqrt(df[col].clip(lower=0))
-        return df
+        if not valid_cols:
+            return df
+
+        try:
+            df[valid_cols] = self.power_transformer.transform(
+                df[valid_cols]
+            )
+
+            logging.info(
+                f"Power transformation applied: {valid_cols}"
+            )
+
+            return df
+
+        except Exception as e:
+            raise CustomException(
+                f"Power transformation failed: {e}",
+                sys
+            )
+
 
     def prepare_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Ensures all required columns exist in the DataFrame before transformation.
