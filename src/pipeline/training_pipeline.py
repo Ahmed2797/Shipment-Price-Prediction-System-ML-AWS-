@@ -173,6 +173,8 @@ class Training_Pipeline:
             if not model_evalution_artifact.is_model_accepted:
                 logging.info(f"Model not accepted.")
 
+                return None
+
             model_pusher_artifact = self.start_model_pusher(model_evalution_artifact,
                                                             data_transformation_artifact)
 
@@ -181,7 +183,7 @@ class Training_Pipeline:
             print("End To End Machine Learning completed")
 
 
-            return None
+            # return None
 
         except Exception as e:
             raise CustomException(e, sys)
