@@ -2,6 +2,8 @@
 
 Developed an end-to-end Machine Learning project for shipment price prediction using Python, Scikit-learn, Fast-api, Docker, and AWS deployment with real-time prediction capability.
 
+![AI](Data/shipment-demo.png)
+
 ## Shipment-Price-Prediction-ML-Project
 
 ## How to run
