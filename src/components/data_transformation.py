@@ -339,6 +339,7 @@ class Data_Transformation:
         """
         numerical_cols = self._column_schema.get("numerical_columns", [])
         multi_cat_cols = self._column_schema.get("multi_categorical_columns", [])
+        power_cols = self._column_schema.get("power_transform_col", [])
 
         # Numerical pipeline: KNN imputation + scaling
         numeric_pipeline = Pipeline([
@@ -352,14 +353,21 @@ class Data_Transformation:
             ("encoder", OneHotEncoder(handle_unknown="ignore", drop="first", sparse_output=False))
         ])
 
+        power_pipeline = Pipeline([
+            ("power_transformer",PowerTransformer(method="yeo-johnson", standardize=False))
+        ])
+
+
+
         # Combine into ColumnTransformer
         preprocessor = ColumnTransformer([
             ("num", numeric_pipeline, numerical_cols),
+            # ("power", power_pipeline, power_cols),
             ("cat", categorical_pipeline, multi_cat_cols)
         ])
 
         logging.info(f"Preprocessor created with {len(numerical_cols)} numerical "
-                    f"and {len(multi_cat_cols)} categorical columns")
+                    f"and {len(multi_cat_cols)} categorical columns and {len(power_cols)} power transformed columns.")
         
         return preprocessor
 
@@ -477,7 +485,9 @@ class Data_Transformation:
             if not transformers:
                 raise CustomException("No valid numeric or categorical columns found for preprocessing", sys)
 
-            preprocessor = ColumnTransformer(transformers, remainder="drop")
+            preprocessor_local = ColumnTransformer(transformers, remainder="drop")
+
+            preprocessor = self.get_preprocessor()
 
             # ✅ FIT ONLY on train data (prevents leakage)
             X_train_transformed = preprocessor.fit_transform(X_train)
@@ -524,13 +534,13 @@ class Data_Transformation:
             )
             save_object(target_transformer_path, self.target_transformer)
             
-            # Save power transformer (if exists)
-            if self.power_transformer is not None:
-                power_transformer_path = os.path.join(
-                    os.path.dirname(self.transformation_config.transform_object_path),
-                    "power_transformer.pkl"
-                )
-                save_object(power_transformer_path, self.power_transformer)
+            # # Save power transformer (if exists)
+            # if self.power_transformer is not None:
+            #     power_transformer_path = os.path.join(
+            #         os.path.dirname(self.transformation_config.transform_object_path),
+            #         "power_transformer.pkl"
+            #     )
+            #     save_object(power_transformer_path, self.power_transformer)
 
             logging.info("=" * 80)
             logging.info("DATA TRANSFORMATION COMPLETED SUCCESSFULLY")
